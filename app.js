@@ -28,6 +28,9 @@ const clearHistoryBtn = document.getElementById('clear-history-btn');
 const trendChartCanvas = document.getElementById('trend-chart');
 const chartCtx = trendChartCanvas.getContext('2d');
 const themeToggleBtn = document.getElementById('theme-toggle');
+const exportBtn = document.getElementById('export-btn');
+const importBtn = document.getElementById('import-btn');
+const importFileInput = document.getElementById('import-file-input');
 
 // ---------------------------------------------
 // PERSISTENCE
@@ -300,6 +303,78 @@ function toggleTheme() {
 }
 
 // ---------------------------------------------
+// BACKUP: EXPORT
+// Bundles all our data into one JSON object, turns it into a
+// downloadable file, and "clicks" a hidden link to save it.
+// This is the standard vanilla-JS trick for saving a file —
+// no library needed.
+// ---------------------------------------------
+function exportBackup() {
+  const backup = {
+    exportedAt: new Date().toISOString(),
+    subjects,
+    targetThreshold,
+    history
+  };
+
+  // Turn the JS object into a text file "in memory" (a Blob),
+  // then create a temporary URL that points to it.
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  // A real <a download> tag is what actually triggers a save-to-device
+  // prompt in the browser. We create one, click it programmatically,
+  // then throw it away — the user never sees this link exist.
+  const link = document.createElement('a');
+  link.href = url;
+  const dateStamp = new Date().toISOString().slice(0, 10); // e.g. 2026-08-24
+  link.download = `attendance-backup-${dateStamp}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------
+// BACKUP: IMPORT
+// Reads a file the user picks, parses it as JSON, and — after
+// checking it looks like a real backup — replaces our current state.
+// ---------------------------------------------
+function importBackup(file) {
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch (err) {
+      alert('That file is not valid — it doesn\'t look like a backup JSON file.');
+      return;
+    }
+
+    // Basic shape check so we don't silently accept a random JSON file.
+    if (!Array.isArray(data.subjects)) {
+      alert('That file is missing the expected data — import cancelled.');
+      return;
+    }
+
+    if (!confirm('Import this backup? It will replace your current subjects, history, and threshold.')) {
+      return;
+    }
+
+    subjects = data.subjects;
+    targetThreshold = data.targetThreshold || 75;
+    history = Array.isArray(data.history) ? data.history : [];
+
+    thresholdInput.value = targetThreshold;
+    render();
+    alert('Backup imported successfully.');
+  };
+
+  reader.readAsText(file);
+}
+
+// ---------------------------------------------
 // ACTIONS
 // These are called directly from the HTML (onclick / onchange)
 // so they need to live on the global scope (not inside a module).
@@ -372,6 +447,19 @@ thresholdInput.addEventListener('change', (e) => {
 
 clearHistoryBtn.addEventListener('click', clearHistory);
 themeToggleBtn.addEventListener('click', toggleTheme);
+
+exportBtn.addEventListener('click', exportBackup);
+
+// The visible "Import Backup" button just opens the invisible
+// file picker — this lets us style our own button instead of being
+// stuck with the browser's default-looking file input.
+importBtn.addEventListener('click', () => importFileInput.click());
+
+importFileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) importBackup(file);
+  importFileInput.value = ''; // reset, so picking the same file twice still fires 'change'
+});
 
 // ---------------------------------------------
 // INIT

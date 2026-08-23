@@ -14,6 +14,25 @@
   --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
+/* DARK MODE: same variable names, different values.
+   Nothing else in this file needs to change — every rule below
+   already reads colors through var(--something), so flipping
+   these values re-colors the entire site at once. */
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --success: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.15);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.15);
+  --border: #334155;
+  --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -27,6 +46,7 @@ body {
   padding: 24px 16px;
   display: flex;
   justify-content: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -59,6 +79,8 @@ header p {
   padding: 20px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeInUp 0.35s ease;
 }
 
 .overall-card {
@@ -171,6 +193,8 @@ header p {
   font-weight: 600;
   outline: none;
   background: var(--bg);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .input-group input:focus {
@@ -352,4 +376,44 @@ header p {
 .history-tag.absent {
   background: var(--danger-bg);
   color: var(--danger);
+}
+
+/* ---- NEW: animation + dark mode toggle ---- */
+
+/* Cards gently rise and fade in when they first appear on screen,
+   instead of just popping into existence instantly. */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+header {
+  position: relative;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
+}
+
+.theme-toggle:active {
+  transform: scale(0.9);
 }

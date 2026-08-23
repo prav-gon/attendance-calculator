@@ -27,6 +27,7 @@ const historyListEl = document.getElementById('history-list');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
 const trendChartCanvas = document.getElementById('trend-chart');
 const chartCtx = trendChartCanvas.getContext('2d');
+const themeToggleBtn = document.getElementById('theme-toggle');
 
 // ---------------------------------------------
 // PERSISTENCE
@@ -205,6 +206,14 @@ function renderChart() {
   const plotWidth = width - padding * 2;
   const plotHeight = height - padding * 2;
 
+  // Pick colors based on the current theme, since canvas drawings
+  // don't automatically follow CSS variables like the rest of the page does.
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+  const labelColor = isDark ? '#94a3b8' : '#94a3b8';
+  const lineColor = isDark ? '#818cf8' : '#4f46e5';
+  const fillColor = isDark ? 'rgba(129, 140, 248, 0.15)' : 'rgba(79, 70, 229, 0.1)';
+
   // Convert a history index (0, 1, 2...) into an x pixel position,
   // and a percentage (0-100) into a y pixel position.
   // Note: y is flipped, because in canvas, y=0 is the TOP of the screen.
@@ -216,9 +225,9 @@ function renderChart() {
   }
 
   // Draw light horizontal gridlines at 0%, 25%, 50%, 75%, 100%
-  chartCtx.strokeStyle = '#e2e8f0';
+  chartCtx.strokeStyle = gridColor;
   chartCtx.lineWidth = 1;
-  chartCtx.fillStyle = '#94a3b8';
+  chartCtx.fillStyle = labelColor;
   chartCtx.font = '10px sans-serif';
   chartCtx.textAlign = 'left';
   [0, 25, 50, 75, 100].forEach(mark => {
@@ -239,7 +248,7 @@ function renderChart() {
   chartCtx.lineTo(toX(history.length - 1), toY(0));
   chartCtx.lineTo(toX(0), toY(0));
   chartCtx.closePath();
-  chartCtx.fillStyle = 'rgba(79, 70, 229, 0.1)';
+  chartCtx.fillStyle = fillColor;
   chartCtx.fill();
 
   // Draw the line itself
@@ -250,12 +259,12 @@ function renderChart() {
     if (i === 0) chartCtx.moveTo(x, y);
     else chartCtx.lineTo(x, y);
   });
-  chartCtx.strokeStyle = '#4f46e5';
+  chartCtx.strokeStyle = lineColor;
   chartCtx.lineWidth = 2;
   chartCtx.stroke();
 
   // Draw a dot at each data point
-  chartCtx.fillStyle = '#4f46e5';
+  chartCtx.fillStyle = lineColor;
   history.forEach((entry, i) => {
     chartCtx.beginPath();
     chartCtx.arc(toX(i), toY(entry.overallPct), 3, 0, Math.PI * 2);
@@ -268,6 +277,26 @@ function clearHistory() {
   history = [];
   saveState();
   renderHistory();
+}
+
+// ---------------------------------------------
+// DARK MODE
+// We store the choice as a string 'dark' or 'light' in localStorage.
+// `data-theme="dark"` on the <html> tag is what the CSS in
+// style.css watches for — see the [data-theme="dark"] block there.
+// ---------------------------------------------
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('attendance_theme', theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+  // The chart is drawn with plain colors, not CSS variables, so it
+  // needs a manual redraw after a theme switch to match the new look.
+  renderChart();
 }
 
 // ---------------------------------------------
@@ -342,6 +371,7 @@ thresholdInput.addEventListener('change', (e) => {
 });
 
 clearHistoryBtn.addEventListener('click', clearHistory);
+themeToggleBtn.addEventListener('click', toggleTheme);
 
 // ---------------------------------------------
 // INIT
@@ -352,5 +382,11 @@ if (savedThreshold) {
   targetThreshold = parseInt(savedThreshold);
   thresholdInput.value = targetThreshold;
 }
+
+// Theme: use the saved choice if one exists, otherwise fall back to
+// whatever the phone/browser's system-wide dark mode setting is.
+const savedTheme = localStorage.getItem('attendance_theme');
+const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
 
 render();

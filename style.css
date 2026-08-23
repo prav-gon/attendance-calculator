@@ -624,3 +624,38 @@ header {
   z-index: 1000;
   animation: celebrationPop 2.4s ease forwards;
 }
+
+/* ---- NEW: floating undo button ---- */
+
+.undo-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--text-main);
+  color: var(--card-bg);
+  border: none;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 997;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.15s ease, opacity 0.2s ease;
+
+  /* Hidden by default. app.js adds the .visible class only when
+     there's actually something in the undo stack to restore. */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+.undo-fab.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.undo-fab:active {
+  transform: scale(0.95);
+}

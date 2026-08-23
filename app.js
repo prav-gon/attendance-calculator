@@ -26,10 +26,7 @@ const addForm = document.getElementById('add-subject-form');
 const historyListEl = document.getElementById('history-list');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
 const trendChartCanvas = document.getElementById('trend-chart');
-
-// This will hold our Chart.js chart object once created, so we can
-// destroy and redraw it each time data changes (simplest approach).
-let trendChart = null;
+const chartCtx = trendChartCanvas.getContext('2d');
 
 // ---------------------------------------------
 // PERSISTENCE
@@ -181,40 +178,88 @@ function renderHistory() {
   renderChart();
 }
 
+// ---------------------------------------------
+// CHART (drawn by hand on <canvas> — no external library needed,
+// so it works even on a slow/unstable connection)
+// ---------------------------------------------
 function renderChart() {
-  // Chart.js needs numeric labels/points. We map our history array
-  // into two parallel arrays: one for the x-axis labels, one for the y values.
-  const labels = history.map(entry => formatTime(entry.time));
-  const dataPoints = history.map(entry => entry.overallPct.toFixed(1));
+  // Make the canvas's actual pixel size match how big it's displayed
+  // on screen. Without this, drawings look blurry or wrong-sized.
+  const width = trendChartCanvas.clientWidth;
+  const height = trendChartCanvas.clientHeight || 180;
+  trendChartCanvas.width = width;
+  trendChartCanvas.height = height;
 
-  // If a chart already exists, destroy it first — otherwise Chart.js
-  // draws a new one on top of the old one every time.
-  if (trendChart) {
-    trendChart.destroy();
+  // Wipe whatever was drawn before.
+  chartCtx.clearRect(0, 0, width, height);
+
+  if (history.length < 2) {
+    chartCtx.fillStyle = '#94a3b8';
+    chartCtx.font = '13px sans-serif';
+    chartCtx.textAlign = 'center';
+    chartCtx.fillText('Log a few +Present/+Absent taps to see your trend', width / 2, height / 2);
+    return;
   }
 
-  trendChart = new Chart(trendChartCanvas, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Overall Attendance %',
-        data: dataPoints,
-        borderColor: '#4f46e5',
-        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } },
-        x: { display: history.length > 1 }
-      }
-    }
+  const padding = 24;
+  const plotWidth = width - padding * 2;
+  const plotHeight = height - padding * 2;
+
+  // Convert a history index (0, 1, 2...) into an x pixel position,
+  // and a percentage (0-100) into a y pixel position.
+  // Note: y is flipped, because in canvas, y=0 is the TOP of the screen.
+  function toX(index) {
+    return padding + (index / (history.length - 1)) * plotWidth;
+  }
+  function toY(pct) {
+    return padding + plotHeight - (pct / 100) * plotHeight;
+  }
+
+  // Draw light horizontal gridlines at 0%, 25%, 50%, 75%, 100%
+  chartCtx.strokeStyle = '#e2e8f0';
+  chartCtx.lineWidth = 1;
+  chartCtx.fillStyle = '#94a3b8';
+  chartCtx.font = '10px sans-serif';
+  chartCtx.textAlign = 'left';
+  [0, 25, 50, 75, 100].forEach(mark => {
+    const y = toY(mark);
+    chartCtx.beginPath();
+    chartCtx.moveTo(padding, y);
+    chartCtx.lineTo(width - padding, y);
+    chartCtx.stroke();
+    chartCtx.fillText(mark + '%', 2, y + 3);
+  });
+
+  // Draw the filled area under the line first (so the line draws on top)
+  chartCtx.beginPath();
+  chartCtx.moveTo(toX(0), toY(history[0].overallPct));
+  history.forEach((entry, i) => {
+    chartCtx.lineTo(toX(i), toY(entry.overallPct));
+  });
+  chartCtx.lineTo(toX(history.length - 1), toY(0));
+  chartCtx.lineTo(toX(0), toY(0));
+  chartCtx.closePath();
+  chartCtx.fillStyle = 'rgba(79, 70, 229, 0.1)';
+  chartCtx.fill();
+
+  // Draw the line itself
+  chartCtx.beginPath();
+  history.forEach((entry, i) => {
+    const x = toX(i);
+    const y = toY(entry.overallPct);
+    if (i === 0) chartCtx.moveTo(x, y);
+    else chartCtx.lineTo(x, y);
+  });
+  chartCtx.strokeStyle = '#4f46e5';
+  chartCtx.lineWidth = 2;
+  chartCtx.stroke();
+
+  // Draw a dot at each data point
+  chartCtx.fillStyle = '#4f46e5';
+  history.forEach((entry, i) => {
+    chartCtx.beginPath();
+    chartCtx.arc(toX(i), toY(entry.overallPct), 3, 0, Math.PI * 2);
+    chartCtx.fill();
   });
 }
 

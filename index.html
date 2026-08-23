@@ -2,343 +2,742 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Attendance Calculator</title>
+<title>Student Attendance Dashboard</title>
 
-    <style>
+<style>
 
-        * {
-            box-sizing: border-box;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #eef2ff, #f8fafc);
-            min-height: 100vh;
-            padding: 20px;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    padding: 18px;
+    color: #1e293b;
+}
 
-        .container {
-            max-width: 520px;
-            margin: auto;
-            background: white;
-            padding: 28px;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
+.container {
+    max-width: 600px;
+    margin: auto;
+}
 
-        .header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
+.header {
+    text-align: center;
+    padding: 25px 10px;
+}
 
-        .icon {
-            font-size: 50px;
-        }
+.logo {
+    font-size: 55px;
+}
 
-        h1 {
-            margin: 8px 0;
-            font-size: 30px;
-        }
+h1 {
+    margin: 8px 0;
+    font-size: 30px;
+}
 
-        .subtitle {
-            color: #64748b;
-            margin: 0;
-        }
+.subtitle {
+    color: #64748b;
+    margin: 0;
+}
 
-        label {
-            display: block;
-            margin-top: 18px;
-            margin-bottom: 7px;
-            font-weight: bold;
-            color: #1e293b;
-        }
+.overall {
+    background: white;
+    padding: 22px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+}
 
-        input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 17px;
-            outline: none;
-        }
+.overall-title {
+    color: #64748b;
+    font-weight: bold;
+}
 
-        input:focus {
-            border-color: #2563eb;
-        }
+.overall-number {
+    font-size: 42px;
+    font-weight: bold;
+    margin: 8px;
+}
 
-        button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 22px;
-            border: none;
-            border-radius: 12px;
-            background: #2563eb;
-            color: white;
-            font-size: 17px;
-            font-weight: bold;
-        }
+.subject {
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
 
-        button:active {
-            transform: scale(0.98);
-        }
+.subject-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
 
-        .reset {
-            background: #e2e8f0;
-            color: #1e293b;
-            margin-top: 10px;
-        }
+.subject-name {
+    font-size: 19px;
+    font-weight: bold;
+}
 
-        #result {
-            display: none;
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 16px;
-            background: #f8fafc;
-        }
+.delete {
+    border: none;
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 7px 10px;
+    border-radius: 8px;
+}
 
-        .percentage {
-            font-size: 32px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 15px;
-        }
+.inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 15px;
+}
 
-        .safe {
-            color: #15803d;
-        }
+label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #64748b;
+}
 
-        .danger {
-            color: #dc2626;
-        }
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 16px;
+}
 
-        .warning {
-            color: #d97706;
-        }
+input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
 
-        .message {
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 12px;
-            font-weight: bold;
-        }
+.attendance {
+    margin-top: 16px;
+    font-size: 25px;
+    font-weight: bold;
+}
 
-        .safe-box {
-            background: #dcfce7;
-            color: #166534;
-        }
+.progress {
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+}
 
-        .danger-box {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+.progress-bar {
+    height: 100%;
+    border-radius: 10px;
+}
 
-        .info-box {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+.safe {
+    color: #16a34a;
+}
 
-        .footer {
-            text-align: center;
-            margin-top: 25px;
-            color: #94a3b8;
-            font-size: 13px;
-        }
+.danger {
+    color: #dc2626;
+}
 
-    </style>
+.warning {
+    color: #d97706;
+}
 
+.message {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.safe-box {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.danger-box {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.info-box {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.add-box {
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    margin-top: 18px;
+}
+
+.add-box input {
+    margin-top: 10px;
+}
+
+button.add {
+    width: 100%;
+    padding: 14px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.reset {
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #e2e8f0;
+    color: #334155;
+    font-weight: bold;
+}
+
+.footer {
+    text-align: center;
+    padding: 25px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+</style>
 </head>
+
 
 <body>
 
 <div class="container">
 
-    <div class="header">
+<div class="header">
 
-        <div class="icon">📚</div>
+<div class="logo">📚</div>
 
-        <h1>Attendance Calculator</h1>
+<h1>Attendance Dashboard</h1>
 
-        <p class="subtitle">
-            Know your attendance. Plan your classes.
-        </p>
+<p class="subtitle">
+Track all your subjects in one place
+</p>
 
-    </div>
-
-
-    <label>Total Classes</label>
-
-    <input
-        type="number"
-        id="total"
-        placeholder="Example: 40"
-        min="1"
-    >
+</div>
 
 
-    <label>Classes Attended</label>
+<div class="overall">
 
-    <input
-        type="number"
-        id="attended"
-        placeholder="Example: 32"
-        min="0"
-    >
+<div class="overall-title">
+OVERALL ATTENDANCE
+</div>
 
+<div class="overall-number" id="overall">
+0%
+</div>
 
-    <label>Required Attendance (%)</label>
+<div id="overallMessage">
+Add your class details below.
+</div>
 
-    <input
-        type="number"
-        id="required"
-        value="75"
-        min="1"
-        max="100"
-    >
+</div>
 
 
-    <button onclick="calculate()">
-        Calculate Attendance
-    </button>
-
-    <button class="reset" onclick="resetCalculator()">
-        Reset
-    </button>
+<div id="subjects"></div>
 
 
-    <div id="result"></div>
+<div class="add-box">
+
+<h3>➕ Add Subject</h3>
+
+<input
+type="text"
+id="newSubject"
+placeholder="Example: Engineering Drawing"
+>
+
+<button class="add" onclick="addSubject()">
+Add Subject
+</button>
+
+</div>
 
 
-    <div class="footer">
-        Student Attendance Calculator
-    </div>
+<button class="reset" onclick="resetAll()">
+🔄 Reset All Data
+</button>
+
+
+<div class="footer">
+Student Attendance Dashboard
+</div>
 
 </div>
 
 
 <script>
 
-function calculate() {
+let defaultSubjects = [
 
-    let total = Number(document.getElementById("total").value);
+{
+name: "Mathematics",
+total: 0,
+attended: 0
+},
 
-    let attended = Number(document.getElementById("attended").value);
+{
+name: "Basic Electrical Engineering",
+total: 0,
+attended: 0
+},
 
-    let required = Number(document.getElementById("required").value);
+{
+name: "Mechanical Engineering",
+total: 0,
+attended: 0
+},
 
-    let resultBox = document.getElementById("result");
+{
+name: "Civil Engineering",
+total: 0,
+attended: 0
+},
 
+{
+name: "Leadership",
+total: 0,
+attended: 0
+},
 
-    if (
-        total <= 0 ||
-        attended < 0 ||
-        attended > total ||
-        required <= 0 ||
-        required > 100
-    ) {
+{
+name: "Physics",
+total: 0,
+attended: 0
+}
 
-        resultBox.style.display = "block";
-
-        resultBox.innerHTML = `
-            <div class="message danger-box">
-                ❌ Please enter valid numbers.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    let percentage = (attended / total) * 100;
-
-
-    let result = `
-        <div class="percentage ${percentage >= required ? "safe" : "danger"}">
-            ${percentage.toFixed(2)}%
-        </div>
-    `;
-
-
-    if (percentage >= required) {
-
-        result += `
-            <div class="message safe-box">
-                🟢 Your attendance is above the required ${required}%.
-            </div>
-        `;
+];
 
 
-        let canMiss = Math.floor(
-            (attended / (required / 100)) - total
-        );
+let subjects =
+JSON.parse(localStorage.getItem("attendanceSubjects"))
+|| defaultSubjects;
 
 
-        if (canMiss > 0) {
+function saveData() {
 
-            result += `
-                <div class="message info-box">
-                    🎯 You can miss approximately
-                    <strong>${canMiss}</strong>
-                    more class(es) and stay at or above ${required}%.
-                </div>
-            `;
+localStorage.setItem(
+"attendanceSubjects",
+JSON.stringify(subjects)
+);
 
-        } else {
-
-            result += `
-                <div class="message info-box">
-                    ⚠️ You should avoid missing your next class.
-                </div>
-            `;
-        }
-
-
-    } else {
-
-
-        result += `
-            <div class="message danger-box">
-                🔴 Your attendance is below the required ${required}%.
-            </div>
-        `;
-
-
-        let needed = Math.ceil(
-            (required * total - 100 * attended) /
-            (100 - required)
-        );
-
-
-        result += `
-            <div class="message info-box">
-                📚 You need to attend
-                <strong>${needed}</strong>
-                consecutive class(es) to reach ${required}%.
-            </div>
-        `;
-    }
-
-
-    resultBox.innerHTML = result;
-
-    resultBox.style.display = "block";
 }
 
 
-function resetCalculator() {
+function calculateAttendance(total, attended) {
 
-    document.getElementById("total").value = "";
+if (total <= 0) {
+return 0;
+}
 
-    document.getElementById("attended").value = "";
-
-    document.getElementById("required").value = "75";
-
-    document.getElementById("result").style.display = "none";
+return (attended / total) * 100;
 
 }
+
+
+function classesNeeded(total, attended) {
+
+let required = 75;
+
+if (total <= 0) {
+return 0;
+}
+
+if ((attended / total) * 100 >= required) {
+return 0;
+}
+
+return Math.ceil(
+(required * total - 100 * attended)
+/
+(100 - required)
+);
+
+}
+
+
+function classesCanMiss(total, attended) {
+
+let required = 75;
+
+if (total <= 0) {
+return 0;
+}
+
+if ((attended / total) * 100 < required) {
+return 0;
+}
+
+return Math.floor(
+(attended / (required / 100)) - total
+);
+
+}
+
+
+function renderSubjects() {
+
+let container =
+document.getElementById("subjects");
+
+container.innerHTML = "";
+
+
+subjects.forEach((subject, index) => {
+
+let percentage =
+calculateAttendance(
+subject.total,
+subject.attended
+);
+
+
+let needed =
+classesNeeded(
+subject.total,
+subject.attended
+);
+
+
+let canMiss =
+classesCanMiss(
+subject.total,
+subject.attended
+);
+
+
+let statusClass =
+percentage >= 75
+? "safe"
+: "danger";
+
+
+let message = "";
+
+
+if (subject.total === 0) {
+
+message = `
+<div class="message info-box">
+Enter your classes to calculate attendance.
+</div>
+`;
+
+}
+else if (percentage >= 75) {
+
+message = `
+<div class="message safe-box">
+🟢 You are above 75%.
+You can miss approximately
+<strong>${canMiss}</strong> more class(es).
+</div>
+`;
+
+}
+else {
+
+message = `
+<div class="message danger-box">
+🔴 Below 75%.
+You need to attend
+<strong>${needed}</strong>
+consecutive class(es) to reach 75%.
+</div>
+`;
+
+}
+
+
+container.innerHTML += `
+
+<div class="subject">
+
+<div class="subject-header">
+
+<div class="subject-name">
+${subject.name}
+</div>
+
+<button
+class="delete"
+onclick="deleteSubject(${index})">
+✕
+</button>
+
+</div>
+
+
+<div class="inputs">
+
+<div>
+
+<label>Total Classes</label>
+
+<input
+type="number"
+min="0"
+value="${subject.total}"
+oninput="updateSubject(${index}, 'total', this.value)"
+>
+
+</div>
+
+
+<div>
+
+<label>Classes Attended</label>
+
+<input
+type="number"
+min="0"
+value="${subject.attended}"
+oninput="updateSubject(${index}, 'attended', this.value)"
+>
+
+</div>
+
+</div>
+
+
+<div class="attendance ${statusClass}">
+${percentage.toFixed(2)}%
+</div>
+
+
+<div class="progress">
+
+<div
+class="progress-bar"
+style="
+width:${Math.min(percentage,100)}%;
+background:${percentage >= 75 ? '#22c55e' : '#ef4444'};
+">
+</div>
+
+</div>
+
+
+${message}
+
+</div>
+
+`;
+
+});
+
+
+updateOverall();
+
+}
+
+
+function updateSubject(index, type, value) {
+
+value = Number(value);
+
+
+if (value < 0) {
+value = 0;
+}
+
+
+if (type === "total") {
+
+subjects[index].total = value;
+
+
+if (subjects[index].attended > value) {
+
+subjects[index].attended = value;
+
+}
+
+}
+else {
+
+if (value > subjects[index].total) {
+
+value = subjects[index].total;
+
+}
+
+subjects[index].attended = value;
+
+}
+
+
+saveData();
+
+renderSubjects();
+
+}
+
+
+function updateOverall() {
+
+let totalClasses = 0;
+
+let totalAttended = 0;
+
+
+subjects.forEach(subject => {
+
+totalClasses += Number(subject.total);
+
+totalAttended += Number(subject.attended);
+
+});
+
+
+let overall =
+totalClasses > 0
+? (totalAttended / totalClasses) * 100
+: 0;
+
+
+let element =
+document.getElementById("overall");
+
+
+element.innerText =
+overall.toFixed(2) + "%";
+
+
+element.className =
+"overall-number " +
+(overall >= 75 ? "safe" : "danger");
+
+
+let message =
+document.getElementById("overallMessage");
+
+
+if (totalClasses === 0) {
+
+message.innerText =
+"Add your class details below.";
+
+}
+else if (overall >= 75) {
+
+message.innerHTML =
+"🟢 Your overall attendance is above 75%.";
+
+}
+else {
+
+message.innerHTML =
+"🔴 Your overall attendance is below 75%.";
+
+}
+
+}
+
+
+function addSubject() {
+
+let input =
+document.getElementById("newSubject");
+
+let name =
+input.value.trim();
+
+
+if (name === "") {
+
+alert("Please enter a subject name.");
+
+return;
+
+}
+
+
+subjects.push({
+
+name: name,
+
+total: 0,
+
+attended: 0
+
+});
+
+
+input.value = "";
+
+saveData();
+
+renderSubjects();
+
+}
+
+
+function deleteSubject(index) {
+
+if (
+confirm(
+"Are you sure you want to delete this subject?"
+)
+) {
+
+subjects.splice(index, 1);
+
+saveData();
+
+renderSubjects();
+
+}
+
+}
+
+
+function resetAll() {
+
+if (
+confirm(
+"This will delete all your attendance data. Continue?"
+)
+) {
+
+localStorage.removeItem(
+"attendanceSubjects"
+);
+
+subjects =
+JSON.parse(
+JSON.stringify(defaultSubjects)
+);
+
+saveData();
+
+renderSubjects();
+
+}
+
+}
+
+
+renderSubjects();
 
 </script>
 

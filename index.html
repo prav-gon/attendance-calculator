@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,136 +8,340 @@
     <title>Attendance Calculator</title>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f2f4f7;
             margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 520px;
             margin: auto;
             background: white;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 28px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .icon {
+            font-size: 50px;
         }
 
         h1 {
-            text-align: center;
+            margin: 8px 0;
+            font-size: 30px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
         }
 
         label {
             display: block;
-            margin-top: 15px;
+            margin-top: 18px;
+            margin-bottom: 7px;
             font-weight: bold;
+            color: #1e293b;
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            margin-top: 6px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 17px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            margin-top: 20px;
+            padding: 15px;
+            margin-top: 22px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             background: #2563eb;
             color: white;
             font-size: 17px;
             font-weight: bold;
         }
 
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f1f5f9;
+        button:active {
+            transform: scale(0.98);
         }
+
+        .reset {
+            background: #e2e8f0;
+            color: #1e293b;
+            margin-top: 10px;
+        }
+
+        #result {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 16px;
+            background: #f8fafc;
+        }
+
+        .percentage {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .safe {
+            color: #15803d;
+        }
+
+        .danger {
+            color: #dc2626;
+        }
+
+        .warning {
+            color: #d97706;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        .safe-box {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .danger-box {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
     </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>📚 Attendance Calculator</h1>
+    <div class="header">
+
+        <div class="icon">📚</div>
+
+        <h1>Attendance Calculator</h1>
+
+        <p class="subtitle">
+            Know your attendance. Plan your classes.
+        </p>
+
+    </div>
+
 
     <label>Total Classes</label>
-    <input type="number" id="total">
+
+    <input
+        type="number"
+        id="total"
+        placeholder="Example: 40"
+        min="1"
+    >
+
 
     <label>Classes Attended</label>
-    <input type="number" id="attended">
+
+    <input
+        type="number"
+        id="attended"
+        placeholder="Example: 32"
+        min="0"
+    >
+
 
     <label>Required Attendance (%)</label>
-    <input type="number" id="required" value="75">
 
-    <button onclick="calculate()">Calculate Attendance</button>
+    <input
+        type="number"
+        id="required"
+        value="75"
+        min="1"
+        max="100"
+    >
 
-    <div id="result">
-        Enter your details and press Calculate.
+
+    <button onclick="calculate()">
+        Calculate Attendance
+    </button>
+
+    <button class="reset" onclick="resetCalculator()">
+        Reset
+    </button>
+
+
+    <div id="result"></div>
+
+
+    <div class="footer">
+        Student Attendance Calculator
     </div>
 
 </div>
+
 
 <script>
 
 function calculate() {
 
     let total = Number(document.getElementById("total").value);
+
     let attended = Number(document.getElementById("attended").value);
+
     let required = Number(document.getElementById("required").value);
 
-    if (total <= 0 || attended < 0 || attended > total) {
-        document.getElementById("result").innerHTML =
-            "❌ Please enter valid numbers.";
+    let resultBox = document.getElementById("result");
+
+
+    if (
+        total <= 0 ||
+        attended < 0 ||
+        attended > total ||
+        required <= 0 ||
+        required > 100
+    ) {
+
+        resultBox.style.display = "block";
+
+        resultBox.innerHTML = `
+            <div class="message danger-box">
+                ❌ Please enter valid numbers.
+            </div>
+        `;
+
         return;
     }
 
+
     let percentage = (attended / total) * 100;
 
-    let result = "";
 
-    result += "<h2>Attendance: " + percentage.toFixed(2) + "%</h2>";
+    let result = `
+        <div class="percentage ${percentage >= required ? "safe" : "danger"}">
+            ${percentage.toFixed(2)}%
+        </div>
+    `;
+
 
     if (percentage >= required) {
 
-        result += "✅ You are above the required attendance.";
+        result += `
+            <div class="message safe-box">
+                🟢 Your attendance is above the required ${required}%.
+            </div>
+        `;
+
 
         let canMiss = Math.floor(
             (attended / (required / 100)) - total
         );
 
+
         if (canMiss > 0) {
-            result += "<br><br>📌 You can miss approximately " +
-                canMiss + " more class(es).";
+
+            result += `
+                <div class="message info-box">
+                    🎯 You can miss approximately
+                    <strong>${canMiss}</strong>
+                    more class(es) and stay at or above ${required}%.
+                </div>
+            `;
+
+        } else {
+
+            result += `
+                <div class="message info-box">
+                    ⚠️ You should avoid missing your next class.
+                </div>
+            `;
         }
+
 
     } else {
 
-        result += "🔴 Your attendance is below the required percentage.";
+
+        result += `
+            <div class="message danger-box">
+                🔴 Your attendance is below the required ${required}%.
+            </div>
+        `;
+
 
         let needed = Math.ceil(
             (required * total - 100 * attended) /
             (100 - required)
         );
 
-        result += "<br><br>📚 You need to attend approximately " +
-            needed + " consecutive class(es) to reach " +
-            required + "%.";
+
+        result += `
+            <div class="message info-box">
+                📚 You need to attend
+                <strong>${needed}</strong>
+                consecutive class(es) to reach ${required}%.
+            </div>
+        `;
     }
 
-    document.getElementById("result").innerHTML = result;
+
+    resultBox.innerHTML = result;
+
+    resultBox.style.display = "block";
+}
+
+
+function resetCalculator() {
+
+    document.getElementById("total").value = "";
+
+    document.getElementById("attended").value = "";
+
+    document.getElementById("required").value = "75";
+
+    document.getElementById("result").style.display = "none";
+
 }
 
 </script>
 
 </body>
+
 </html>

@@ -31,6 +31,11 @@ const themeToggleBtn = document.getElementById('theme-toggle');
 const exportBtn = document.getElementById('export-btn');
 const importBtn = document.getElementById('import-btn');
 const importFileInput = document.getElementById('import-file-input');
+const todayListEl = document.getElementById('today-list');
+
+// Short labels for the day picker buttons, in Sunday-first order —
+// this matches what JavaScript's Date.getDay() returns (0 = Sunday).
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 // ---------------------------------------------
 // PERSISTENCE
@@ -109,6 +114,18 @@ function render() {
       <div class="progress-bar-container">
         <div class="progress-bar-fill" style="width: ${Math.min(pct, 100)}%; background: ${isSafe ? 'var(--success)' : 'var(--danger)'}"></div>
       </div>
+      <div>
+        <label class="day-picker-label">Class Days</label>
+        <div class="day-picker">
+          ${DAY_LABELS.map((label, dayIndex) => `
+            <button
+              type="button"
+              class="day-btn ${(subject.schedule || []).includes(dayIndex) ? 'active' : ''}"
+              onclick="toggleScheduleDay('${subject.id}', ${dayIndex})"
+            >${label}</button>
+          `).join('')}
+        </div>
+      </div>
       <div class="action-buttons">
         <button class="btn-action present" onclick="quickLog('${subject.id}', true)">+ Present</button>
         <button class="btn-action absent" onclick="quickLog('${subject.id}', false)">+ Absent</button>
@@ -125,8 +142,51 @@ function render() {
   overallPercentageEl.style.color = overallPct >= targetThreshold ? 'var(--success)' : 'var(--danger)';
   overallStatsEl.textContent = `${attendedAll} of ${totalAll} Classes Attended`;
 
+  renderTodayClasses();
   saveState();
   renderHistory();
+}
+
+// ---------------------------------------------
+// SCHEDULE: which weekdays each subject meets on
+// ---------------------------------------------
+
+// Adds or removes a day from a subject's schedule array.
+// Same "map over the array, replace the one that matches" pattern
+// used everywhere else in this file (see updateValues, quickLog).
+function toggleScheduleDay(id, dayIndex) {
+  subjects = subjects.map(s => {
+    if (s.id !== id) return s;
+    const current = s.schedule || [];
+    const has = current.includes(dayIndex);
+    const updatedSchedule = has
+      ? current.filter(d => d !== dayIndex)   // remove it
+      : [...current, dayIndex];                // add it
+    return { ...s, schedule: updatedSchedule };
+  });
+  render();
+}
+
+// Shows which subjects are scheduled for today, with quick
+// Present/Absent buttons right there — no scrolling needed.
+function renderTodayClasses() {
+  const todayIndex = new Date().getDay(); // 0 = Sunday ... 6 = Saturday
+  const todaysSubjects = subjects.filter(s => (s.schedule || []).includes(todayIndex));
+
+  if (todaysSubjects.length === 0) {
+    todayListEl.innerHTML = '<div class="today-empty">No classes scheduled today. Set class days on each subject below.</div>';
+    return;
+  }
+
+  todayListEl.innerHTML = todaysSubjects.map(s => `
+    <div class="today-item">
+      <span>${s.name}</span>
+      <div class="action-buttons" style="width: auto; display: flex; gap: 6px;">
+        <button class="btn-action present" style="padding: 6px 10px;" onclick="quickLog('${s.id}', true)">+ Present</button>
+        <button class="btn-action absent" style="padding: 6px 10px;" onclick="quickLog('${s.id}', false)">+ Absent</button>
+      </div>
+    </div>
+  `).join('');
 }
 
 // ---------------------------------------------
@@ -433,7 +493,8 @@ addForm.addEventListener('submit', (e) => {
     id: Date.now().toString(),
     name,
     total: 0,
-    attended: 0
+    attended: 0,
+    schedule: []
   });
 
   input.value = '';

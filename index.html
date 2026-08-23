@@ -1,656 +1,469 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Attendance Pro — Smart Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
-    <style>
-        /* ===== RESET & BASE ===== */
-        *,
-        *::before,
-        *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        :root {
-            --bg: #0b0d15;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --bg-card-hover: rgba(255, 255, 255, 0.07);
-            --bg-modal: rgba(11, 13, 21, 0.92);
-            --border: rgba(255, 255, 255, 0.07);
-            --border-light: rgba(255, 255, 255, 0.12);
-            --text: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-            --glow: 0 0 40px rgba(99, 102, 241, 0.08);
-            --radius: 20px;
-            --radius-sm: 12px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --font: 'Inter', system-ui, -apple-system, sans-serif;
-            --accent: #818cf8;
-            --accent-glow: rgba(99, 102, 241, 0.25);
-            --green: #34d399;
-            --green-bg: rgba(52, 211, 153, 0.12);
-            --yellow: #fbbf24;
-            --yellow-bg: rgba(251, 191, 36, 0.12);
-            --red: #f87171;
-            --red-bg: rgba(248, 113, 113, 0.12);
-        }
-        [data-theme="light"] {
-            --bg: #f1f5f9;
-            --bg-card: rgba(255, 255, 255, 0.7);
-            --bg-card-hover: rgba(255, 255, 255, 0.9);
-            --bg-modal: rgba(241, 245, 249, 0.95);
-            --border: rgba(0, 0, 0, 0.06);
-            --border-light: rgba(0, 0, 0, 0.1);
-            --text: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            --glow: 0 0 40px rgba(99, 102, 241, 0.06);
-        }
-        html {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            transition: background var(--transition), color var(--transition);
-        }
-        body {
-            min-height: 100vh;
-            padding: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            background: var(--bg);
-            transition: background var(--transition);
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance Pro Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    }
 
-        /* ===== APP CONTAINER ===== */
-        .app {
-            max-width: 1360px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
 
-        /* ===== HEADER ===== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            padding: 8px 0;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #818cf8, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .logo-icon {
-            font-size: 32px;
-            -webkit-text-fill-color: initial;
-        }
-        .header-date {
-            font-size: 14px;
-            color: var(--text-secondary);
-            background: var(--bg-card);
-            padding: 6px 16px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            font-weight: 500;
-            backdrop-filter: blur(8px);
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .theme-toggle {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-secondary);
-            font-size: 20px;
-            cursor: pointer;
-            transition: all var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(8px);
-        }
-        .theme-toggle:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-light);
-            transform: scale(1.04);
-        }
-        .export-btn {
-            padding: 10px 22px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: var(--font);
-        }
-        .export-btn:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-light);
-            transform: scale(1.02);
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
 
-        /* ===== STATS ROW ===== */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 22px 24px;
-            backdrop-filter: blur(12px);
-            transition: all var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-light);
-            transform: translateY(-2px);
-        }
-        .stat-card .stat-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 6px;
-        }
-        .stat-card .stat-value {
-            font-size: 34px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-        }
-        .stat-card .stat-sub {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-top: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .stat-card .stat-sub .badge {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 10px;
-            border-radius: 20px;
-            background: var(--green-bg);
-            color: var(--green);
-        }
-        .stat-card .stat-sub .badge.warn {
-            background: var(--yellow-bg);
-            color: var(--yellow);
-        }
-        .stat-card .stat-sub .badge.danger {
-            background: var(--red-bg);
-            color: var(--red);
-        }
-        .stat-card .stat-icon {
-            position: absolute;
-            right: 20px;
-            top: 20px;
-            font-size: 28px;
-            opacity: 0.12;
-        }
-        .stat-card.primary .stat-value {
-            color: var(--accent);
-        }
-        .stat-card.green .stat-value {
-            color: var(--green);
-        }
-        .stat-card.yellow .stat-value {
-            color: var(--yellow);
-        }
-        .stat-card.blue .stat-value {
-            color: #60a5fa;
-        }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-        /* ===== MAIN GRID ===== */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1.6fr 1fr;
-            gap: 24px;
-        }
-        @media (max-width: 1000px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+    header {
+      text-align: center;
+    }
 
-        /* ===== CHART CARD ===== */
-        .chart-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            backdrop-filter: blur(12px);
-            transition: all var(--transition);
-        }
-        .chart-card:hover {
-            border-color: var(--border-light);
-        }
-        .chart-card .card-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 18px;
-        }
-        .chart-card .card-head h3 {
-            font-size: 17px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .chart-card .card-head h3 span {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--text-secondary);
-        }
-        .chart-wrapper {
-            width: 100%;
-            height: 200px;
-            position: relative;
-        }
-        .chart-wrapper canvas {
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: var(--radius-sm);
-        }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
 
-        /* ===== CALENDAR CARD ===== */
-        .calendar-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            backdrop-filter: blur(12px);
-            transition: all var(--transition);
-        }
-        .calendar-card:hover {
-            border-color: var(--border-light);
-        }
-        .calendar-card .card-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .calendar-card .card-head h3 {
-            font-size: 17px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .calendar-nav {
-            display: flex;
-            gap: 6px;
-        }
-        .calendar-nav button {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all var(--transition);
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .calendar-nav button:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-light);
-        }
-        .calendar-nav .month-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            padding: 0 10px;
-            min-width: 100px;
-            text-align: center;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            margin-top: 4px;
-        }
-        .calendar-grid .day-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-align: center;
-            padding: 6px 0;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-        .calendar-grid .day-cell {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 50%;
-            color: var(--text-secondary);
-            transition: all var(--transition);
-            cursor: default;
-            position: relative;
-        }
-        .calendar-grid .day-cell.empty {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .calendar-grid .day-cell.has-class {
-            color: var(--text);
-            font-weight: 600;
-        }
-        .calendar-grid .day-cell.has-class::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--text-muted);
-        }
-        .calendar-grid .day-cell.attended {
-            color: var(--green);
-        }
-        .calendar-grid .day-cell.attended::after {
-            background: var(--green);
-        }
-        .calendar-grid .day-cell.missed {
-            color: var(--red);
-        }
-        .calendar-grid .day-cell.missed::after {
-            background: var(--red);
-        }
-        .calendar-grid .day-cell.today {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-            color: var(--accent);
-            font-weight: 700;
-        }
-        .calendar-legend {
-            display: flex;
-            gap: 18px;
-            margin-top: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .calendar-legend .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        .calendar-legend .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        .calendar-legend .legend-dot.green {
-            background: var(--green);
-        }
-        .calendar-legend .legend-dot.red {
-            background: var(--red);
-        }
-        .calendar-legend .legend-dot.gray {
-            background: var(--text-muted);
-        }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
 
-        /* ===== SUBJECTS GRID ===== */
-        .subjects-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .subjects-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .subjects-header h2 {
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .subjects-header h2 span {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--text-secondary);
-        }
-        .subjects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 18px;
-        }
-        .subject-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 22px 24px;
-            backdrop-filter: blur(12px);
-            transition: all var(--transition);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .subject-card:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-light);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-        .subject-card .color-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            border-radius: var(--radius) var(--radius) 0 0;
-        }
-        .subject-card .card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-top: 4px;
-        }
-        .subject-card .card-top .name {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .subject-card .card-top .pct {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        .subject-card .card-stats {
-            display: flex;
-            gap: 20px;
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-        }
-        .subject-card .card-stats .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-        .subject-card .card-stats .stat-item .label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            font-weight: 500;
-        }
-        .subject-card .card-stats .stat-item .value {
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-        .subject-card .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-        }
-        .subject-card .card-footer .can-miss {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        .subject-card .card-footer .can-miss strong {
-            color: var(--text);
-        }
-        .subject-card .card-footer .status-badge {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 14px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .status-badge.safe {
-            background: var(--green-bg);
-            color: var(--green);
-        }
-        .status-badge.warn {
-            background: var(--yellow-bg);
-            color: var(--yellow);
-        }
-        .status-badge.danger {
-            background: var(--red-bg);
-            color: var(--red);
-        }
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
 
-        .progress-track {
-            width: 100%;
-            height: 4px;
-            background: var(--border);
-            border-radius: 4px;
-            margin-top: 14px;
-            overflow: hidden;
-        }
-        .progress-track .progress-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 0%;
-        }
+    .overall-card {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
 
-        /* ===== ADD BUTTON ===== */
-        .add-subject-btn {
-            padding: 16px 28px;
-            border-radius: var(--radius);
-            border: 2px dashed var(--border);
-            background: transparent;
-            color: var(--text-secondary);
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: var(--font);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-        }
-        .add-subject-btn:hover {
-            border-color: var(--accent);
-            color: var(--text);
-            background: var(--bg-card);
-        }
+    .overall-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
 
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-modal);
-            backdrop-filter: blur(16px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s ease;
-            padding: 24px;
+    .overall-percentage {
+      font-size: 2.75rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .overall-stats {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .threshold-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .threshold-control input {
+      width: 50px;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .subject-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .subject-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .subject-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .subject-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .delete-btn:hover {
+      color: var(--danger);
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .input-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      background: var(--bg);
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+    }
+
+    .progress-bar-container {
+      height: 8px;
+      width: 100%;
+      background: #f1f5f9;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      background: #ffffff;
+      transition: background 0.15s;
+    }
+
+    .btn-action.present:hover {
+      background: var(--success-bg);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .btn-action.absent:hover {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .status-badge {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .status-safe {
+      background-color: var(--success-bg);
+      color: var(--success);
+    }
+
+    .status-danger {
+      background-color: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .add-form input {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Attendance Dashboard</h1>
+      <p>Track, manage, and optimize your attendance status</p>
+    </header>
+
+    <div class="card overall-card">
+      <div class="overall-title">Overall Attendance</div>
+      <div class="overall-percentage" id="overall-percentage">0.00%</div>
+      <div class="overall-stats" id="overall-stats">0 of 0 Classes Attended</div>
+      <div class="threshold-control">
+        <label for="threshold-input">Target Criteria:</label>
+        <input type="number" id="threshold-input" value="75" min="1" max="100" />%
+      </div>
+    </div>
+
+    <div class="subject-list" id="subject-list"></div>
+
+    <div class="card">
+      <form class="add-form" id="add-subject-form">
+        <label style="font-weight: 700; font-size: 0.9rem;">+ Add New Subject</label>
+        <input type="text" id="subject-name" placeholder="e.g., Data Structures, Physics" required />
+        <button type="submit" class="btn-primary">Add Subject</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let targetThreshold = 75;
+    let subjects = JSON.parse(localStorage.getItem('attendance_subjects')) || [
+      { id: '1', name: 'Mathematics', total: 25, attended: 20 }
+    ];
+
+    const subjectListEl = document.getElementById('subject-list');
+    const overallPercentageEl = document.getElementById('overall-percentage');
+    const overallStatsEl = document.getElementById('overall-stats');
+    const thresholdInput = document.getElementById('threshold-input');
+    const addForm = document.getElementById('add-subject-form');
+
+    function saveState() {
+      localStorage.setItem('attendance_subjects', JSON.stringify(subjects));
+      localStorage.setItem('attendance_threshold', targetThreshold);
+    }
+
+    function calculateStatus(attended, total, target) {
+      if (total === 0) return { pct: 0, text: 'No classes recorded yet.', isSafe: true };
+      const pct = (attended / total) * 100;
+      const tFrac = target / 100;
+
+      if (pct >= target) {
+        const canBunk = Math.floor((attended - (tFrac * total)) / tFrac);
+        const text = canBunk === 0 
+          ? `On track (${pct.toFixed(1)}%). You cannot miss the next class.`
+          : `Safe (${pct.toFixed(1)}%). You can miss approximately ${canBunk} class(es).`;
+        return { pct, text, isSafe: true };
+      } else {
+        const needToAttend = Math.ceil(((tFrac * total) - attended) / (1 - tFrac));
+        return { 
+          pct, 
+          text: `Shortage (${pct.toFixed(1)}%). Attend next ${needToAttend} class(es) consecutively to hit ${target}%.`, 
+          isSafe: false 
+        };
+      }
+    }
+
+    function render() {
+      subjectListEl.innerHTML = '';
+      let totalAll = 0;
+      let attendedAll = 0;
+
+      subjects.forEach((subject) => {
+        totalAll += subject.total;
+        attendedAll += subject.attended;
+
+        const { pct, text, isSafe } = calculateStatus(subject.attended, subject.total, targetThreshold);
+
+        const card = document.createElement('div');
+        card.className = 'card subject-card';
+        card.innerHTML = `
+          <div class="subject-header">
+            <span class="subject-title">${subject.name}</span>
+            <button class="delete-btn" onclick="deleteSubject('${subject.id}')">&times;</button>
+          </div>
+
+          <div class="input-grid">
+            <div class="input-group">
+              <label>Total Classes</label>
+              <input type="number" min="0" value="${subject.total}" onchange="updateValues('${subject.id}', 'total', this.value)" />
+            </div>
+            <div class="input-group">
+              <label>Attended</label>
+              <input type="number" min="0" value="${subject.attended}" onchange="updateValues('${subject.id}', 'attended', this.value)" />
+            </div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: ${Math.min(pct, 100)}%; background: ${isSafe ? 'var(--success)' : 'var(--danger)'}"></div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-action present" onclick="quickLog('${subject.id}', true)">+ Present</button>
+            <button class="btn-action absent" onclick="quickLog('${subject.id}', false)">+ Absent</button>
+          </div>
+
+          <div class="status-badge ${isSafe ? 'status-safe' : 'status-danger'}">
+            ${text}
+          </div>
+        `;
+        subjectListEl.appendChild(card);
+      });
+
+      const overallPct = totalAll > 0 ? (attendedAll / totalAll) * 100 : 0;
+      overallPercentageEl.textContent = `${overallPct.toFixed(2)}%`;
+      overallPercentageEl.style.color = overallPct >= targetThreshold ? 'var(--success)' : 'var(--danger)';
+      overallStatsEl.textContent = `${attendedAll} of ${totalAll} Classes Attended`;
+
+      saveState();
+    }
+
+    function quickLog(id, wasPresent) {
+      subjects = subjects.map(s => {
+        if (s.id === id) {
+          return {
+            ...s,
+            total: s.total + 1,
+            attended: wasPresent ? s.attended + 1 : s.attended
+          };
         }
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
+        return s;
+      });
+      render();
+    }
+
+    function updateValues(id, field, value) {
+      const numVal = Math.max(0, parseInt(value) || 0);
+      subjects = subjects.map(s => {
+        if (s.id === id) {
+          const updated = { ...s, [field]: numVal };
+          if (updated.attended > updated.total) {
+            updated.total = updated.attended;
+          }
+          return updated;
         }
-        .modal {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 32px 36px;
-            max-width: 480px;
-            width: 100%;
-            box-shadow: var(--shadow);
-        
+        return s;
+      });
+      render();
+    }
+
+    function deleteSubject(id) {
+      subjects = subjects.filter(s => s.id !== id);
+      render();
+    }
+
+    addForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('subject-name');
+      const name = input.value.trim();
+      if (!name) return;
+
+      subjects.push({
+        id: Date.now().toString(),
+        name,
+        total: 0,
+        attended: 0
+      });
+
+      input.value = '';
+      render();
+    });
+
+    thresholdInput.addEventListener('change', (e) => {
+      targetThreshold = Math.min(100, Math.max(1, parseInt(e.target.value) || 75));
+      render();
+    });
+
+    const savedThreshold = localStorage.getItem('attendance_threshold');
+    if (savedThreshold) {
+      targetThreshold = parseInt(savedThreshold);
+      thresholdInput.value = targetThreshold;
+    }
+
+    render();
+  </script>
+</body>
+</html>

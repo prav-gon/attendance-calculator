@@ -48,6 +48,20 @@
       <div class="history-list" id="history-list"></div>
     </div>
 
+    <!-- NEW: Backup & restore card -->
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">Backup & Restore</span>
+      </div>
+      <div class="backup-buttons">
+        <button class="btn-action" id="export-btn">⬇ Export Backup</button>
+        <button class="btn-action" id="import-btn">⬆ Import Backup</button>
+      </div>
+      <!-- Hidden file picker — triggered by the Import button above -->
+      <input type="file" id="import-file-input" accept="application/json" style="display: none;" />
+      <p class="backup-hint">Export saves a file to your phone. Keep it somewhere safe — Import will restore from that file later, even on a different phone or browser.</p>
+    </div>
+
     <div class="card">
       <form class="add-form" id="add-subject-form">
         <label style="font-weight: 700; font-size: 0.9rem;">+ Add New Subject</label>

@@ -37,6 +37,16 @@ const todayListEl = document.getElementById('today-list');
 // this matches what JavaScript's Date.getDay() returns (0 = Sunday).
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
+const overallEmojiEl = document.getElementById('overall-emoji');
+const heatmapGridEl = document.getElementById('heatmap-grid');
+const streakBadgeEl = document.getElementById('streak-badge');
+
+// Tracks which subject card should play a pop/shake animation on the
+// NEXT render only — set right before calling render(), read once
+// inside it, then cleared so it doesn't replay on every future render.
+let lastActionSubjectId = null;
+let lastActionType = null; // 'present' | 'absent'
+
 // ---------------------------------------------
 // PERSISTENCE
 // Saves the current state into the browser's
@@ -55,7 +65,7 @@ function saveState() {
 // classes they can skip (or must attend) to stay on target.
 // ---------------------------------------------
 function calculateStatus(attended, total, target) {
-  if (total === 0) return { pct: 0, text: 'No classes recorded yet.', isSafe: true };
+  if (total === 0) return { pct: 0, text: '📭 No classes recorded yet.', isSafe: true };
 
   const pct = (attended / total) * 100;
   const tFrac = target / 100;
@@ -63,14 +73,14 @@ function calculateStatus(attended, total, target) {
   if (pct >= target) {
     const canBunk = Math.floor((attended - (tFrac * total)) / tFrac);
     const text = canBunk === 0
-      ? `On track (${pct.toFixed(1)}%). You cannot miss the next class.`
-      : `Safe (${pct.toFixed(1)}%). You can miss approximately ${canBunk} class(es).`;
+      ? `🎯 On track (${pct.toFixed(1)}%). You cannot miss the next class.`
+      : `✅ Safe (${pct.toFixed(1)}%). You can miss approximately ${canBunk} class(es).`;
     return { pct, text, isSafe: true };
   } else {
     const needToAttend = Math.ceil(((tFrac * total) - attended) / (1 - tFrac));
     return {
       pct,
-      text: `Shortage (${pct.toFixed(1)}%). Attend next ${needToAttend} class(es) consecutively to hit ${target}%.`,
+      text: `🚨 Shortage (${pct.toFixed(1)}%). Attend next ${needToAttend} class(es) consecutively to hit ${target}%.`,
       isSafe: false
     };
   }
@@ -95,7 +105,11 @@ function render() {
     const { pct, text, isSafe } = calculateStatus(subject.attended, subject.total, targetThreshold);
 
     const card = document.createElement('div');
-    card.className = 'card subject-card';
+    let animationClass = '';
+    if (subject.id === lastActionSubjectId) {
+      animationClass = lastActionType === 'present' ? 'pop-present' : 'shake-absent';
+    }
+    card.className = `card subject-card ${animationClass}`;
     card.innerHTML = `
       <div class="subject-header">
         <span class="subject-title">${subject.name}</span>
@@ -127,8 +141,8 @@ function render() {
         </div>
       </div>
       <div class="action-buttons">
-        <button class="btn-action present" onclick="quickLog('${subject.id}', true)">+ Present</button>
-        <button class="btn-action absent" onclick="quickLog('${subject.id}', false)">+ Absent</button>
+        <button class="btn-action present" onclick="quickLog('${subject.id}', true, event)">+ Present</button>
+        <button class="btn-action absent" onclick="quickLog('${subject.id}', false, event)">+ Absent</button>
       </div>
       <div class="status-badge ${isSafe ? 'status-safe' : 'status-danger'}">
         ${text}
@@ -137,12 +151,31 @@ function render() {
     subjectListEl.appendChild(card);
   });
 
+  // The animation flag was only meant for this one render — clear it
+  // so the card doesn't keep re-animating on unrelated future renders.
+  lastActionSubjectId = null;
+  lastActionType = null;
+
   const overallPct = totalAll > 0 ? (attendedAll / totalAll) * 100 : 0;
   overallPercentageEl.textContent = `${overallPct.toFixed(2)}%`;
   overallPercentageEl.style.color = overallPct >= targetThreshold ? 'var(--success)' : 'var(--danger)';
   overallStatsEl.textContent = `${attendedAll} of ${totalAll} Classes Attended`;
 
+  // Pick a reaction emoji based on how comfortably above/below target you are.
+  if (totalAll === 0) {
+    overallEmojiEl.textContent = '🌱';
+  } else if (overallPct >= 90) {
+    overallEmojiEl.textContent = '🏆';
+  } else if (overallPct >= targetThreshold) {
+    overallEmojiEl.textContent = '✅';
+  } else if (overallPct >= targetThreshold - 5) {
+    overallEmojiEl.textContent = '⚠️';
+  } else {
+    overallEmojiEl.textContent = '🚨';
+  }
+
   renderTodayClasses();
+  renderHeatmap();
   saveState();
   renderHistory();
 }
@@ -182,11 +215,76 @@ function renderTodayClasses() {
     <div class="today-item">
       <span>${s.name}</span>
       <div class="action-buttons" style="width: auto; display: flex; gap: 6px;">
-        <button class="btn-action present" style="padding: 6px 10px;" onclick="quickLog('${s.id}', true)">+ Present</button>
-        <button class="btn-action absent" style="padding: 6px 10px;" onclick="quickLog('${s.id}', false)">+ Absent</button>
+        <button class="btn-action present" style="padding: 6px 10px;" onclick="quickLog('${s.id}', true, event)">+ Present</button>
+        <button class="btn-action absent" style="padding: 6px 10px;" onclick="quickLog('${s.id}', false, event)">+ Absent</button>
       </div>
     </div>
   `).join('');
+}
+
+// ---------------------------------------------
+// HEATMAP + STREAK
+// Groups history entries by calendar day (local time), then colors
+// one square per day for the last 70 days — same visual idea as
+// GitHub's own contribution graph.
+// ---------------------------------------------
+
+// Turns a Date into a "YYYY-MM-DD" key using LOCAL time (not UTC),
+// so a class logged at 11pm doesn't accidentally count as tomorrow.
+function localDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function renderHeatmap() {
+  // Group every history entry by which day it happened on.
+  const dayStatus = {}; // { "2026-08-24": "present" | "absent" | "mixed" }
+
+  history.forEach(entry => {
+    const key = localDateKey(new Date(entry.time));
+    if (!dayStatus[key]) {
+      dayStatus[key] = entry.action;
+    } else if (dayStatus[key] !== entry.action) {
+      dayStatus[key] = 'mixed';
+    }
+  });
+
+  // Build the last 70 days (10 weeks), oldest first, so the grid
+  // reads left-to-right like a calendar.
+  const days = [];
+  const today = new Date();
+  for (let i = 69; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+
+  heatmapGridEl.innerHTML = days.map(d => {
+    const key = localDateKey(d);
+    const status = dayStatus[key];
+    let level = '0';
+    if (status === 'present') level = '3';
+    else if (status === 'mixed') level = '2';
+    else if (status === 'absent') level = 'absent';
+
+    const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return `<div class="heatmap-cell" data-level="${level}" title="${label}"></div>`;
+  }).join('');
+
+  // Streak = consecutive days, counting back from today, that had
+  // at least one "present" logged and zero "absent" logged.
+  let streak = 0;
+  for (let i = days.length - 1; i >= 0; i--) {
+    const key = localDateKey(days[i]);
+    if (dayStatus[key] === 'present') {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  streakBadgeEl.textContent = streak > 0 ? `🔥 ${streak} day streak` : '';
 }
 
 // ---------------------------------------------
@@ -234,7 +332,7 @@ function renderHistory() {
           <span class="history-subject">${entry.subject}</span>
           <span class="history-time">${formatTime(entry.time)}</span>
         </div>
-        <span class="history-tag ${entry.action}">${entry.action === 'present' ? 'Present' : 'Absent'}</span>
+        <span class="history-tag ${entry.action}">${entry.action === 'present' ? '✅ Present' : '❌ Absent'}</span>
       </div>
     `).join('');
   }
@@ -435,12 +533,70 @@ function importBackup(file) {
 }
 
 // ---------------------------------------------
+// CELEBRATION EFFECTS
+// Small, self-contained DOM tricks — each one creates temporary
+// elements, animates them with a CSS class, then removes them
+// after the animation finishes (setTimeout matches the CSS duration).
+// ---------------------------------------------
+
+// A quick "+1" or "−1" that floats up from wherever you tapped.
+function floatingFeedback(event, text, color) {
+  if (!event) return; // safety check, in case a caller forgets to pass it
+  const rect = event.currentTarget.getBoundingClientRect();
+
+  const el = document.createElement('div');
+  el.className = 'float-feedback';
+  el.textContent = text;
+  el.style.left = `${rect.left + rect.width / 2 - 10}px`;
+  el.style.top = `${rect.top}px`;
+  el.style.color = color;
+  document.body.appendChild(el);
+
+  setTimeout(() => el.remove(), 800); // matches the 0.8s animation
+}
+
+// A burst of falling emoji across the screen, for hitting a milestone.
+function launchConfetti() {
+  const emojis = ['🎉', '✨', '🎊', '⭐'];
+  const pieceCount = 24;
+
+  for (let i = 0; i < pieceCount; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = `${Math.random() * 100}vw`;
+    const duration = 1.8 + Math.random() * 1.2; // 1.8s - 3s
+    el.style.animationDuration = `${duration}s`;
+    el.style.animationDelay = `${Math.random() * 0.3}s`;
+    document.body.appendChild(el);
+
+    setTimeout(() => el.remove(), (duration + 0.3) * 1000);
+  }
+}
+
+// A pill-shaped banner that pops in from the top, then fades out on its own.
+function showCelebration(text) {
+  const el = document.createElement('div');
+  el.className = 'celebration-banner';
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2400); // matches the 2.4s animation
+}
+
+// ---------------------------------------------
 // ACTIONS
 // These are called directly from the HTML (onclick / onchange)
 // so they need to live on the global scope (not inside a module).
 // ---------------------------------------------
-function quickLog(id, wasPresent) {
+function quickLog(id, wasPresent, event) {
   const subject = subjects.find(s => s.id === id);
+  if (!subject) return;
+
+  // Snapshot the overall % BEFORE this change, so we can detect the
+  // exact moment it crosses back above target (that's our "celebrate" trigger).
+  const totalBefore = subjects.reduce((sum, s) => sum + s.total, 0);
+  const attendedBefore = subjects.reduce((sum, s) => sum + s.attended, 0);
+  const pctBefore = totalBefore > 0 ? (attendedBefore / totalBefore) * 100 : 0;
 
   subjects = subjects.map(s => {
     if (s.id === id) {
@@ -455,7 +611,24 @@ function quickLog(id, wasPresent) {
 
   // Only +Present/+Absent taps create history entries — manual number
   // edits below don't, since they're corrections, not real events.
-  if (subject) logHistory(subject.name, wasPresent);
+  logHistory(subject.name, wasPresent);
+
+  // Flag this subject's card to animate on the next render.
+  lastActionSubjectId = id;
+  lastActionType = wasPresent ? 'present' : 'absent';
+
+  floatingFeedback(event, wasPresent ? '+1 ✅' : '−1 😕', wasPresent ? '#16a34a' : '#dc2626');
+
+  const totalAfter = subjects.reduce((sum, s) => sum + s.total, 0);
+  const attendedAfter = subjects.reduce((sum, s) => sum + s.attended, 0);
+  const pctAfter = totalAfter > 0 ? (attendedAfter / totalAfter) * 100 : 0;
+
+  // The celebration moment: you were below target, and this action
+  // brought your OVERALL attendance back up to/above it.
+  if (pctBefore < targetThreshold && pctAfter >= targetThreshold) {
+    launchConfetti();
+    showCelebration('🎉 Back on track!');
+  }
 
   render();
 }

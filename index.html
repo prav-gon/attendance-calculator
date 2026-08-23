@@ -3,54 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Attendance Tracker</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Attendance Pro Dashboard</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="app-container">
-    <!-- Header with Animated Mascot -->
-    <header class="header">
-      <div class="mascot-wrapper" id="mascot-container">
-        <!-- Animated Cartoon SVG -->
-        <svg class="mascot-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="60" cy="65" rx="46" ry="42" class="mascot-body" />
-          <!-- Eyes -->
-          <circle cx="44" cy="58" r="6" class="mascot-eye eye-left" />
-          <circle cx="76" cy="58" r="6" class="mascot-eye eye-right" />
-          <!-- Happy / Normal Mouth -->
-          <path d="M 48 74 Q 60 84 72 74" class="mascot-mouth mouth-happy" />
-          <!-- Sad Mouth -->
-          <path d="M 48 80 Q 60 70 72 80" class="mascot-mouth mouth-sad" />
-          <!-- Sweat Drop for Danger Zone -->
-          <path d="M 88 40 Q 94 48 88 54 Q 82 48 88 40 Z" class="mascot-sweat" />
-        </svg>
-      </div>
-      <h1>Attendance Tracker</h1>
-      <p id="overall-status" class="subtitle">Add a subject to get started</p>
+  <div class="container">
+    <header>
+      <h1>Attendance Dashboard</h1>
+      <p>Track, manage, and optimize your attendance status</p>
     </header>
 
-    <!-- Subject Cards List -->
-    <section id="subjects-container" class="cards-list"></section>
+    <div class="card overall-card">
+      <div class="overall-title">Overall Attendance</div>
+      <div class="overall-percentage" id="overall-percentage">0.00%</div>
+      <div class="overall-stats" id="overall-stats">0 of 0 Classes Attended</div>
+      <div class="threshold-control">
+        <label for="threshold-input">Target Criteria:</label>
+        <input type="number" id="threshold-input" value="75" min="1" max="100" />%
+      </div>
+    </div>
 
-    <!-- Add Subject Form -->
-    <section class="add-card">
-      <h3>+ Add New Subject</h3>
-      <form id="add-subject-form" class="add-form">
-        <input 
-          type="text" 
-          id="subject-name-input" 
-          placeholder="e.g. Physics, Data Structures" 
-          required 
-          autocomplete="off"
-        />
-        <button type="submit" class="btn btn-primary btn-animated">Add Subject</button>
+    <div class="subject-list" id="subject-list"></div>
+
+    <!-- NEW: Trend chart card -->
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">Attendance Trend</span>
+      </div>
+      <canvas id="trend-chart" height="180"></canvas>
+    </div>
+
+    <!-- NEW: History log card -->
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">History Log</span>
+        <button class="link-btn" id="clear-history-btn">Clear</button>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+
+    <div class="card">
+      <form class="add-form" id="add-subject-form">
+        <label style="font-weight: 700; font-size: 0.9rem;">+ Add New Subject</label>
+        <input type="text" id="subject-name" placeholder="e.g., Data Structures, Physics" required />
+        <button type="submit" class="btn-primary">Add Subject</button>
       </form>
-    </section>
-  </main>
+    </div>
+  </div>
 
-  <script src="script.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

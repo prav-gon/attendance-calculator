@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subject Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+      <a href="index.html" class="back-link">← Back to Dashboard</a>
+    </header>
+
+    <!-- Everything below is filled in by subject.js once it knows
+         which subject ID is in the URL (see ?id=... at the top of the link) -->
+    <div class="card" id="subject-detail-card">
+      <div class="subject-header">
+        <input type="text" id="subject-name-input" class="subject-name-input" />
+        <button class="delete-btn" id="delete-subject-btn">&times;</button>
+      </div>
+
+      <div class="input-grid">
+        <div class="input-group">
+          <label>Total Classes</label>
+          <input type="number" min="0" id="input-total" />
+        </div>
+        <div class="input-group">
+          <label>Attended</label>
+          <input type="number" min="0" id="input-attended" />
+        </div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="detail-progress-fill"></div>
+      </div>
+
+      <div>
+        <label class="day-picker-label">Class Days</label>
+        <div class="day-picker" id="detail-day-picker"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-action present" id="detail-present-btn">+ Present</button>
+        <button class="btn-action absent" id="detail-absent-btn">+ Absent</button>
+      </div>
+
+      <div class="status-badge" id="detail-status-badge"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">🕒 Activity for this Subject</span>
+      </div>
+      <div class="history-list" id="subject-history-list"></div>
+    </div>
+  </div>
+
+  <button id="undo-btn" class="undo-fab" title="Undo last action">↩️ Undo</button>
+
+  <script src="core.js"></script>
+  <script src="subject.js"></script>
+</body>
+</html>

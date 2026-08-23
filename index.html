@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Attendance Pro Dashboard</title>
+  <title>Attendance Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +11,6 @@
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Makes this installable as an app, with its own icon and no browser bar -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4f46e5" />
   <link rel="icon" href="icon-192.png" />
@@ -41,7 +40,6 @@
       </div>
     </div>
 
-    <!-- NEW: Today's classes summary, based on each subject's schedule -->
     <div class="card" id="today-card">
       <div class="section-header">
         <span class="section-title" id="today-title">📅 Today's Classes</span>
@@ -49,9 +47,16 @@
       <div id="today-list"></div>
     </div>
 
-    <div class="subject-list" id="subject-list"></div>
+    <!-- Subjects are now a clean, clickable LIST — tap one to open its
+         own dedicated page (subject.html), instead of everything being
+         crammed into this one long scrolling page. -->
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">📚 Subjects</span>
+      </div>
+      <div class="subject-row-list" id="subject-row-list"></div>
+    </div>
 
-    <!-- NEW: Trend chart card -->
     <div class="card">
       <div class="section-header">
         <span class="section-title">📈 Attendance Trend</span>
@@ -59,7 +64,6 @@
       <canvas id="trend-chart" height="180"></canvas>
     </div>
 
-    <!-- NEW: GitHub-style contribution heatmap -->
     <div class="card">
       <div class="section-header">
         <span class="section-title">🔥 Activity Heatmap</span>
@@ -78,7 +82,6 @@
       </div>
     </div>
 
-    <!-- NEW: History log card -->
     <div class="card">
       <div class="section-header">
         <span class="section-title">🕒 History Log</span>
@@ -87,7 +90,6 @@
       <div class="history-list" id="history-list"></div>
     </div>
 
-    <!-- NEW: Backup & restore card -->
     <div class="card">
       <div class="section-header">
         <span class="section-title">💾 Backup & Restore</span>
@@ -96,7 +98,6 @@
         <button class="btn-action" id="export-btn">⬇ Export Backup</button>
         <button class="btn-action" id="import-btn">⬆ Import Backup</button>
       </div>
-      <!-- Hidden file picker — triggered by the Import button above -->
       <input type="file" id="import-file-input" accept="application/json" style="display: none;" />
       <p class="backup-hint">Export saves a file to your phone. Keep it somewhere safe — Import will restore from that file later, even on a different phone or browser.</p>
     </div>
@@ -110,16 +111,13 @@
     </div>
   </div>
 
-  <!-- NEW: floating undo button — hidden by default via CSS,
-       shown only when there's something to undo (see app.js) -->
   <button id="undo-btn" class="undo-fab" title="Undo last action">↩️ Undo</button>
 
-  <script src="app.js"></script>
+  <!-- core.js MUST load before dashboard.js, since dashboard.js
+       uses functions and variables defined in core.js -->
+  <script src="core.js"></script>
+  <script src="dashboard.js"></script>
 
-  <!-- Registers the service worker (sw.js), which lets the app open
-       even with no signal, and enables the "Add to Home Screen"
-       install prompt. If this fails for any reason, the site still
-       works completely normally — this only adds extra capability. -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

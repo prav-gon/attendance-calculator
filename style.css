@@ -269,3 +269,87 @@ header p {
 .btn-primary:hover {
   background-color: var(--primary-hover);
 }
+
+/* ---- NEW: history + chart section ---- */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.link-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.link-btn:hover {
+  color: var(--danger);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.history-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  font-size: 0.8rem;
+}
+
+.history-item .history-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item .history-subject {
+  font-weight: 600;
+}
+
+.history-item .history-time {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.history-tag {
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.history-tag.present {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.history-tag.absent {
+  background: var(--danger-bg);
+  color: var(--danger);
+}

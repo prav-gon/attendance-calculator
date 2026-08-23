@@ -24,13 +24,16 @@
   <div class="container">
     <header>
       <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-      <h1>Attendance Dashboard</h1>
+      <h1>🎓 Attendance Dashboard</h1>
       <p>Track, manage, and optimize your attendance status</p>
     </header>
 
     <div class="card overall-card">
       <div class="overall-title">Overall Attendance</div>
-      <div class="overall-percentage" id="overall-percentage">0.00%</div>
+      <div class="overall-percentage-row">
+        <div class="overall-percentage" id="overall-percentage">0.00%</div>
+        <span class="overall-emoji" id="overall-emoji"></span>
+      </div>
       <div class="overall-stats" id="overall-stats">0 of 0 Classes Attended</div>
       <div class="threshold-control">
         <label for="threshold-input">Target Criteria:</label>
@@ -41,7 +44,7 @@
     <!-- NEW: Today's classes summary, based on each subject's schedule -->
     <div class="card" id="today-card">
       <div class="section-header">
-        <span class="section-title" id="today-title">Today's Classes</span>
+        <span class="section-title" id="today-title">📅 Today's Classes</span>
       </div>
       <div id="today-list"></div>
     </div>
@@ -51,15 +54,34 @@
     <!-- NEW: Trend chart card -->
     <div class="card">
       <div class="section-header">
-        <span class="section-title">Attendance Trend</span>
+        <span class="section-title">📈 Attendance Trend</span>
       </div>
       <canvas id="trend-chart" height="180"></canvas>
+    </div>
+
+    <!-- NEW: GitHub-style contribution heatmap -->
+    <div class="card">
+      <div class="section-header">
+        <span class="section-title">🔥 Activity Heatmap</span>
+        <span class="streak-badge" id="streak-badge"></span>
+      </div>
+      <div class="heatmap-scroll">
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+      <div class="heatmap-legend">
+        <span>Less</span>
+        <span class="heatmap-cell" data-level="0"></span>
+        <span class="heatmap-cell" data-level="1"></span>
+        <span class="heatmap-cell" data-level="2"></span>
+        <span class="heatmap-cell" data-level="3"></span>
+        <span>More</span>
+      </div>
     </div>
 
     <!-- NEW: History log card -->
     <div class="card">
       <div class="section-header">
-        <span class="section-title">History Log</span>
+        <span class="section-title">🕒 History Log</span>
         <button class="link-btn" id="clear-history-btn">Clear</button>
       </div>
       <div class="history-list" id="history-list"></div>
@@ -68,7 +90,7 @@
     <!-- NEW: Backup & restore card -->
     <div class="card">
       <div class="section-header">
-        <span class="section-title">Backup & Restore</span>
+        <span class="section-title">💾 Backup & Restore</span>
       </div>
       <div class="backup-buttons">
         <button class="btn-action" id="export-btn">⬇ Export Backup</button>
@@ -81,7 +103,7 @@
 
     <div class="card">
       <form class="add-form" id="add-subject-form">
-        <label style="font-weight: 700; font-size: 0.9rem;">+ Add New Subject</label>
+        <label style="font-weight: 700; font-size: 0.9rem;">➕ Add New Subject</label>
         <input type="text" id="subject-name" placeholder="e.g., Data Structures, Physics" required />
         <button type="submit" class="btn-primary">Add Subject</button>
       </form>

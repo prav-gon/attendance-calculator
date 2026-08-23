@@ -48,6 +48,47 @@ let lastActionSubjectId = null;
 let lastActionType = null; // 'present' | 'absent'
 
 // ---------------------------------------------
+// UNDO
+// Before any risky action (present/absent tap, manual edit, delete),
+// we save a full snapshot of the current data. Undo just means
+// "throw away the current data and restore the last snapshot" —
+// much simpler than trying to reverse each action individually.
+// ---------------------------------------------
+const undoBtn = document.getElementById('undo-btn');
+let undoStack = [];
+const UNDO_LIMIT = 15; // don't let this grow forever
+
+function pushUndoSnapshot() {
+  // JSON.parse(JSON.stringify(...)) is a quick way to deep-copy an
+  // object/array in JS — it turns it to text and back, so the copy
+  // shares no references with the original (editing one won't affect the other).
+  undoStack.push({
+    subjects: JSON.parse(JSON.stringify(subjects)),
+    history: JSON.parse(JSON.stringify(history)),
+    targetThreshold
+  });
+  if (undoStack.length > UNDO_LIMIT) {
+    undoStack.shift(); // drop the oldest snapshot
+  }
+  updateUndoButtonVisibility();
+}
+
+function updateUndoButtonVisibility() {
+  undoBtn.classList.toggle('visible', undoStack.length > 0);
+}
+
+function undoLastAction() {
+  if (undoStack.length === 0) return;
+  const snapshot = undoStack.pop();
+  subjects = snapshot.subjects;
+  history = snapshot.history;
+  targetThreshold = snapshot.targetThreshold;
+  thresholdInput.value = targetThreshold;
+  updateUndoButtonVisibility();
+  render();
+}
+
+// ---------------------------------------------
 // PERSISTENCE
 // Saves the current state into the browser's
 // localStorage so it survives a page refresh.
@@ -592,6 +633,8 @@ function quickLog(id, wasPresent, event) {
   const subject = subjects.find(s => s.id === id);
   if (!subject) return;
 
+  pushUndoSnapshot();
+
   // Snapshot the overall % BEFORE this change, so we can detect the
   // exact moment it crosses back above target (that's our "celebrate" trigger).
   const totalBefore = subjects.reduce((sum, s) => sum + s.total, 0);
@@ -634,6 +677,7 @@ function quickLog(id, wasPresent, event) {
 }
 
 function updateValues(id, field, value) {
+  pushUndoSnapshot();
   const numVal = Math.max(0, parseInt(value) || 0);
   subjects = subjects.map(s => {
     if (s.id === id) {
@@ -649,6 +693,7 @@ function updateValues(id, field, value) {
 }
 
 function deleteSubject(id) {
+  pushUndoSnapshot();
   subjects = subjects.filter(s => s.id !== id);
   render();
 }
@@ -661,6 +706,8 @@ addForm.addEventListener('submit', (e) => {
   const input = document.getElementById('subject-name');
   const name = input.value.trim();
   if (!name) return;
+
+  pushUndoSnapshot();
 
   subjects.push({
     id: Date.now().toString(),
@@ -681,6 +728,7 @@ thresholdInput.addEventListener('change', (e) => {
 
 clearHistoryBtn.addEventListener('click', clearHistory);
 themeToggleBtn.addEventListener('click', toggleTheme);
+undoBtn.addEventListener('click', undoLastAction);
 
 exportBtn.addEventListener('click', exportBackup);
 

@@ -553,43 +553,96 @@ updateOverall();
 
 function updateSubject(index, type, value) {
 
-value = Number(value);
+    value = Number(value);
 
+    if (value < 0) {
+        value = 0;
+    }
 
-if (value < 0) {
-value = 0;
-}
+    if (type === "total") {
 
+        subjects[index].total = value;
 
-if (type === "total") {
+        if (subjects[index].attended > value) {
+            subjects[index].attended = value;
+        }
 
-subjects[index].total = value;
+    } else {
 
+        if (value > subjects[index].total) {
+            value = subjects[index].total;
+        }
 
-if (subjects[index].attended > value) {
+        subjects[index].attended = value;
+    }
 
-subjects[index].attended = value;
+    saveData();
 
-}
+    updateOverall();
 
-}
-else {
+    // Update only this subject card
+    let cards = document.querySelectorAll(".subject");
+    let card = cards[index];
 
-if (value > subjects[index].total) {
+    if (!card) return;
 
-value = subjects[index].total;
+    let percentage = calculateAttendance(
+        subjects[index].total,
+        subjects[index].attended
+    );
 
-}
+    let attendance = card.querySelector(".attendance");
+    let progress = card.querySelector(".progress-bar");
+    let message = card.querySelector(".message");
 
-subjects[index].attended = value;
+    attendance.innerText = percentage.toFixed(2) + "%";
 
-}
+    attendance.className =
+        "attendance " +
+        (percentage >= 75 ? "safe" : "danger");
 
+    progress.style.width =
+        Math.min(percentage, 100) + "%";
 
-saveData();
+    progress.style.background =
+        percentage >= 75 ? "#22c55e" : "#ef4444";
 
-renderSubjects();
+    let needed = classesNeeded(
+        subjects[index].total,
+        subjects[index].attended
+    );
 
+    let canMiss = classesCanMiss(
+        subjects[index].total,
+        subjects[index].attended
+    );
+
+    if (subjects[index].total === 0) {
+
+        message.className = "message info-box";
+
+        message.innerHTML =
+            "Enter your classes to calculate attendance.";
+
+    } else if (percentage >= 75) {
+
+        message.className = "message safe-box";
+
+        message.innerHTML =
+            "🟢 You are above 75%. You can miss approximately " +
+            "<strong>" + canMiss + "</strong>" +
+            " more class(es).";
+
+    } else {
+
+        message.className = "message danger-box";
+
+        message.innerHTML =
+            "🔴 Below 75%. You need to attend " +
+            "<strong>" + needed + "</strong>" +
+            " consecutive class(es) to reach 75%.";
+
+    }
 }
 
 

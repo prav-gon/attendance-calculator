@@ -99,6 +99,16 @@ header p {
   color: var(--text-muted);
 }
 
+.overall-percentage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overall-emoji {
+  font-size: 2rem;
+}
+
 .overall-percentage {
   font-size: 2.75rem;
   font-weight: 800;
@@ -488,4 +498,129 @@ header {
   font-size: 0.85rem;
   text-align: center;
   padding: 8px 0;
+}
+
+/* ---- NEW: activity heatmap (GitHub contribution-graph style) ---- */
+
+.streak-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.heatmap-scroll {
+  overflow-x: auto;
+  /* Hides the scrollbar visually but keeps it scrollable by touch */
+  padding-bottom: 4px;
+}
+
+.heatmap-grid {
+  display: grid;
+  /* 10 weeks of columns, each column holding 7 day-squares stacked
+     vertically. grid-auto-flow: column fills column-by-column,
+     which is exactly the layout GitHub's graph uses. */
+  grid-template-rows: repeat(7, 14px);
+  grid-auto-flow: column;
+  grid-auto-columns: 14px;
+  gap: 3px;
+  width: max-content;
+}
+
+.heatmap-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--border);
+  display: inline-block;
+}
+
+/* Level 0 = no activity that day, level 3 = fullest activity.
+   Reusing the same green as the rest of the app for consistency. */
+.heatmap-cell[data-level="0"] { background: var(--border); }
+.heatmap-cell[data-level="1"] { background: rgba(22, 163, 74, 0.35); }
+.heatmap-cell[data-level="2"] { background: rgba(22, 163, 74, 0.65); }
+.heatmap-cell[data-level="3"] { background: var(--success); }
+.heatmap-cell[data-level="absent"] { background: var(--danger); }
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* ---- NEW: reaction animations ---- */
+
+/* Plays once on a subject card right after you tap +Present */
+@keyframes popSuccess {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.025); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.35); }
+  100% { transform: scale(1); }
+}
+.pop-present {
+  animation: popSuccess 0.4s ease;
+}
+
+/* Plays once on a subject card right after you tap +Absent */
+@keyframes shakeDanger {
+  0%, 100% { transform: translateX(0); }
+  20%  { transform: translateX(-4px); }
+  40%  { transform: translateX(4px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+}
+.shake-absent {
+  animation: shakeDanger 0.4s ease;
+}
+
+/* Little "+1" / "−1" that floats up and fades near a tapped button */
+@keyframes floatUpFade {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-32px); }
+}
+.float-feedback {
+  position: fixed;
+  font-weight: 800;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 999;
+  animation: floatUpFade 0.8s ease forwards;
+}
+
+/* Confetti particles for the "back on track" celebration */
+@keyframes confettiFall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0.9; }
+}
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  font-size: 1.4rem;
+  pointer-events: none;
+  z-index: 998;
+  animation: confettiFall linear forwards;
+}
+
+/* Celebration banner shown briefly when you cross back above target */
+@keyframes celebrationPop {
+  0%   { opacity: 0; transform: translate(-50%, -20px) scale(0.9); }
+  15%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  85%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -10px) scale(0.95); }
+}
+.celebration-banner {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  background: var(--success);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 1000;
+  animation: celebrationPop 2.4s ease forwards;
 }
